@@ -4,10 +4,10 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.Distance;
@@ -15,6 +15,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -27,7 +28,9 @@ public class Intake extends SubsystemBase {
   public CANSparkMax topMotor = new CANSparkMax(9, MotorType.kBrushless);
   public CANSparkMax botMotor = new CANSparkMax(10, MotorType.kBrushless);
 
-  private final double kGearing = (1/20.0);
+  private final DigitalInput beamBreak;
+
+  private final double kGearing = (1/5);
   private final double kConversionFactor = kGearing*0.028*Math.PI;
 
   SimpleMotorFeedforward topMotorFeedforward = new SimpleMotorFeedforward(0.14127, 14.5, 0.51524);//p:2.7648
@@ -57,12 +60,14 @@ public class Intake extends SubsystemBase {
 
   /** Creates a new Intake. */
   public Intake() {
+    beamBreak = new DigitalInput(0);
+
     for(CANSparkMax motor : new CANSparkMax[]{topMotor,botMotor} ){
       motor.restoreFactoryDefaults();
       motor.clearFaults();
 
       //SAFETY
-      motor.setSmartCurrentLimit(20);
+      motor.setSmartCurrentLimit(15, 25);
       motor.setIdleMode(IdleMode.kBrake);
 
       //POSITION + VELOCITY
@@ -91,7 +96,7 @@ public class Intake extends SubsystemBase {
     SmartDashboard.putNumber("intake/topMotorVel", getTopMotorVelocity().in(Units.InchesPerSecond));
     SmartDashboard.putNumber("intake/botMotorVel", getBotMotorVelocity().in(Units.InchesPerSecond));
 
-
+    SmartDashboard.putBoolean("beamBreak/blocked", getBeamBreakIsBlocked());
   }
 
   private Measure<Distance> getTopMotorPosition(){
@@ -149,5 +154,9 @@ public class Intake extends SubsystemBase {
                 .andThen(new WaitCommand(2))
                 .andThen(this.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(5))
                 .andThen(new WaitCommand(2));
+  }
+
+  public boolean getBeamBreakIsBlocked(){
+    return !beamBreak.get();
   }
 }

@@ -10,9 +10,9 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,15 +20,16 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SetShooterStateTrapezoidal;
+import frc.robot.commands.DriverIntake;
+import frc.robot.commands.ScoreAmp;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.IntakeVision;
 import frc.robot.subsystems.Shooter;
 
 /**
@@ -65,6 +66,8 @@ public class RobotContainer {
   public final Shooter shooter = new Shooter();
   public final Chassis chassis = new Chassis(navx, swerveDriveKinematics, swerveDrivePoseEstimator);
 
+  public final IntakeVision intakeVision = new IntakeVision();
+
   // Replace with CommandPS4Controller or CommandJoystick if needed
   public final CommandXboxController driverController = new CommandXboxController(0);
 
@@ -95,7 +98,7 @@ public class RobotContainer {
     chassis.setDefaultCommand(chassis.getDriveCommand(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4)));
     shooter.setDefaultCommand(new SequentialCommandGroup(
         new WaitCommand(1.0),
-        new RunCommand(()->shooter.setPosition(Units.Degrees.of(5)), shooter).withTimeout(0.5),
+        new RunCommand(()->shooter.setPosition(Units.Degrees.of(10)), shooter).withTimeout(0.5),
         new RunCommand(()->{
         shooter.setVoltage(Units.Volts.of(0));
       }, 
@@ -113,58 +116,73 @@ public class RobotContainer {
     );
 
     intake.setDefaultCommand(new SequentialCommandGroup(
-        new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(-5)), intake).withTimeout(0.5),
         new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(0)),intake)
       )
     );
 
-    //intake
-    new Trigger(driverController.button(5))
+    //A
+    new Trigger(driverController.button(1))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI), chassis));
+
+    //B
+    new Trigger(driverController.button(2))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), -Math.PI/2.0), chassis));
+
+    //X
+    new Trigger(driverController.button(3))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI/2.0), chassis));
+
+    //Y
+    new Trigger(driverController.button(4))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), 0.0), chassis));
+
+    //RIGHT PADDLE
+    new Trigger(driverController.povRight())
+    .whileTrue(new ParallelCommandGroup(
+      new RunCommand(()->shooter.setPosition(Units.Degrees.of(50)), shooter),
+      new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-800)), flywheel)
+    ));
+
+    new Trigger(()->driverController.getRightTriggerAxis()>0.25)
+    .whileTrue(new DriverIntake(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4), chassis, intake, intakeVision));
+
+    new Trigger(driverController.button(4))
+    .whileTrue(new ScoreAmp(shooter, flywheel, intake));
+
+    //   //actually shoot
+    new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
       .whileTrue(new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake)
       );
 
-    //   //spin up flywheels
-    // new Trigger(driverController.button(6))
+    // new Trigger(driverController.button(1))
     //   .whileTrue(new RunCommand(()->{
-    //     flywheel.setTopMotorVoltage(Units.Volts.of(-10));
-    //     flywheel.setBotMotorVoltage(Units.Volts.of(-10));
+    //     flywheel.setVelocity(Units.InchesPerSecond.of(-driverController.getRawAxis(1)*700));
     //   }, 
-    //   flywheel));
-
-    //   //actually shoot
-    // new Trigger(driverController.button(3))
-    //   .whileTrue(new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(60)),intake)
-    //   );
-
-    new Trigger(driverController.button(1))
-      .whileTrue(new RunCommand(()->{
-        flywheel.setVelocity(Units.InchesPerSecond.of(-driverController.getRawAxis(1)*700));
-      }, 
-      flywheel)
-    );
+    //   flywheel)
+    // );
 
     // new Trigger(driverController.button(4))
     //   .whileTrue(new SetShooterStateTrapezoidal(45, shooter));
 
-    new Trigger(driverController.button(4))
-      .whileTrue(new ParallelCommandGroup(
-        new RunCommand(()->shooter.setPosition(Units.Degrees.of(98)), shooter),
-        new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-150)), flywheel)
-      )
-    );
+    // new Trigger(driverController.button(4))
+    //   .whileTrue(new ParallelCommandGroup(
+    //     new RunCommand(()->shooter.setPosition(Units.Degrees.of(98)), shooter),
+    //     new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-150)), flywheel)
+    //   )
+    // );
 
-      //shoot
-      new Trigger(driverController.button(6))
-        .whileTrue(new ParallelCommandGroup(
-          new RunCommand(()->shooter.setPosition(Units.Degrees.of(30)), shooter),
-          new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
-        )
-      );
+    //   //shoot
+    //   new Trigger(driverController.button(6))
+    //     .whileTrue(new ParallelCommandGroup(
+    //       new RunCommand(()->shooter.setPosition(Units.Degrees.of(30)), shooter),
+    //       new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
+    //     )
+    //   );
 
-    new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
-    .whileTrue(
-      new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)), flywheel)
-    );
+    // new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
+    // .whileTrue(
+    //   new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)), flywheel)
+    // );
     // new Trigger(driverController.button(4))
     // .whileTrue(
     //   new RunCommand(()->shooter.setVoltage(Units.Volts.of(-5*driverController.getRawAxis(1))),shooter)
@@ -181,6 +199,7 @@ public class RobotContainer {
     //     new SetShooterStateTrapezoidal(Units.Degrees.of(-driverController.getRawAxis(0)*9+10), shooter)
     //   );
 
+    //TRIPLE BAR
     new Trigger(driverController.button(8))
       .onTrue(new InstantCommand(()->navx.reset()));
 

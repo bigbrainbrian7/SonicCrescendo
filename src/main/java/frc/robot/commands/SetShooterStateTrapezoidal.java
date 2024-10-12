@@ -29,6 +29,8 @@ public class SetShooterStateTrapezoidal extends Command {
     goal = new TrapezoidProfile.State(angleDegrees, 0);
 
     this.shooter = shooter;
+
+    addRequirements(shooter);
   }
 
   // Called when the command is initially scheduled.

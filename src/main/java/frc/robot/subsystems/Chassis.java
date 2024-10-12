@@ -9,10 +9,12 @@ import java.util.function.DoubleSupplier;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -20,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -32,9 +35,13 @@ public class Chassis extends SubsystemBase {
   public SwerveDrivePoseEstimator swerveDrivePoseEstimator;
 
   public final double kMaxSpeedMetersPerSecond = 4.3; 
-  public final double kMaxAngularVelocity = 2.35;
+  public final double kMaxAngularVelocity = 11.47;
+
+  private final PIDController headingPID = new PIDController(16.0/Math.PI, 0, 0);
 
   private SwerveModule[] swerveModules = new SwerveModule[4];
+
+  Field2d field = new Field2d();
 
   /** Creates a new Chassis. */
   public Chassis(AHRS navx, SwerveDriveKinematics swerveDriveKinematics, SwerveDrivePoseEstimator swerveDrivePoseEstimator) {
@@ -53,14 +60,18 @@ public class Chassis extends SubsystemBase {
     // swerveModules[3].setDriveMotorInverted(false);  
 
     navx.reset();
-    resetOdometry(new Pose2d());
+    resetOdometry(new Pose2d(8, 4, new Rotation2d()));
+
+    headingPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
+    updateOdometry();
     SmartDashboard.putNumber("chassis/navx", navx.getRotation2d().getRadians());
+    field.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+    SmartDashboard.putData("field", field);
 
     for(int i=0; i<4; i++){
       SmartDashboard.putNumber("chassis/swervemodule"+i+"/drivePosition", swerveModules[i].getSwerveModulePosition().distanceMeters);
@@ -82,6 +93,15 @@ public class Chassis extends SubsystemBase {
 
   public Command getDriveCommand(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega){
     return new RunCommand(()->setChassisSpeeds(new ChassisSpeeds(vx.getAsDouble()*kMaxSpeedMetersPerSecond, vy.getAsDouble()*kMaxSpeedMetersPerSecond, omega.getAsDouble()*kMaxAngularVelocity), true), this);
+  };
+
+  public void driveToBearing(double vx, double vy, double targetRadians){
+    double currentRadians = navx.getRotation2d().getRadians(); 
+    double correctedRadians = MathUtil.angleModulus(targetRadians);
+    double output = headingPID.calculate(currentRadians, correctedRadians);
+    SmartDashboard.putNumber("drivePid/output", output);
+    SmartDashboard.putNumber("drivePid/error", correctedRadians-currentRadians);
+    setChassisSpeeds(new ChassisSpeeds(vx*kMaxSpeedMetersPerSecond, vy*kMaxSpeedMetersPerSecond, output), true);
   };
 
   public void resetOdometry(Pose2d pose) {
@@ -135,5 +155,9 @@ public class Chassis extends SubsystemBase {
         });
 
     // System.out.println(Timer.getFPGATimestamp());
+  }
+
+  public Rotation2d getRotation2d(){
+    return navx.getRotation2d();
   }
 }
