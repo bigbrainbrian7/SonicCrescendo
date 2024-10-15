@@ -15,6 +15,7 @@ import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -22,21 +23,23 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-public class Flywheel extends SubsystemBase {
-  public CANSparkMax topMotor = new CANSparkMax(11, MotorType.kBrushless);
-  public CANSparkMax botMotor = new CANSparkMax(12, MotorType.kBrushless);
+public class Intake extends SubsystemBase {
+  //Intake is the front of the robot
+  public CANSparkMax topMotor = new CANSparkMax(9, MotorType.kBrushless);
+  public CANSparkMax botMotor = new CANSparkMax(10, MotorType.kBrushless);
 
-  SimpleMotorFeedforward botMotorFeedforward = new SimpleMotorFeedforward(0.27677, 0.013468326, 0.0014590776);
-  SimpleMotorFeedforward topMotorFeedforward = new SimpleMotorFeedforward(0.30421, 0.012778232, 0.0011931396);
+  private final DigitalInput beamBreak;
 
-  private final double kGearing = (36.0/22.0);
-  private final double kConversionFactor = kGearing * 2.0 * Math.PI;
-  public double targetSetpoint;
+  private final double kGearing = (1/5);
+  private final double kConversionFactor = kGearing*0.028*Math.PI;
+
+  SimpleMotorFeedforward topMotorFeedforward = new SimpleMotorFeedforward(0.14127, 14.5, 0.51524);//p:2.7648
+  SimpleMotorFeedforward botMotorFeedforward = new SimpleMotorFeedforward(0.14092, 13.75, 0.42175);//p:1.7946
 
   private final SysIdRoutine sysIdRoutine =
   new SysIdRoutine(
       // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-      new SysIdRoutine.Config(Units.Volts.per(Units.Seconds).of(1.0), Units.Volts.of(9), null),
+      new SysIdRoutine.Config(Units.Volts.per(Units.Seconds).of(0.5), Units.Volts.of(5), null),
       new SysIdRoutine.Mechanism(
           // Tell SysId how to plumb the driving voltage to the motors.
           (Measure<Voltage> volts) -> {
@@ -55,18 +58,17 @@ public class Flywheel extends SubsystemBase {
           },
           this));
 
+  /** Creates a new Intake. */
+  public Intake() {
+    beamBreak = new DigitalInput(0);
 
-  /** Creates a new Flywheel. */
-  public Flywheel() {
-    topMotor.setInverted(true);
-    botMotor.setInverted(true);
     for(CANSparkMax motor : new CANSparkMax[]{topMotor,botMotor} ){
       motor.restoreFactoryDefaults();
       motor.clearFaults();
 
       //SAFETY
-      motor.setSmartCurrentLimit(60);
-      motor.setIdleMode(IdleMode.kCoast);
+      motor.setSmartCurrentLimit(15, 25);
+      motor.setIdleMode(IdleMode.kBrake);
 
       //POSITION + VELOCITY
       motor.getEncoder().setPositionConversionFactor(kConversionFactor);
@@ -75,13 +77,12 @@ public class Flywheel extends SubsystemBase {
       motor.getEncoder().setAverageDepth(2);
       motor.getEncoder().setPosition(0);
 
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 73);
       motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 20);
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 37);
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 107);
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 2851);
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 3527);
-      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 4219);
+      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 20);
+      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 20);
+      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 1000);
+      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 1000);
+      motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 1000);
 
       motor.burnFlash();
     }
@@ -90,26 +91,28 @@ public class Flywheel extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("flywheel/topMotorPos", getTopMotorPosition().in(Units.Inches));
-    SmartDashboard.putNumber("flywheel/botMotorPos", getBotMotorPosition().in(Units.Inches));
-    SmartDashboard.putNumber("flywheel/topMotorVel", getTopMotorVelocity().in(Units.InchesPerSecond));
-    SmartDashboard.putNumber("flywheel/botMotorVel", getBotMotorVelocity().in(Units.InchesPerSecond));
+    SmartDashboard.putNumber("intake/topMotorPos", getTopMotorPosition().in(Units.Inches));
+    SmartDashboard.putNumber("intake/botMotorPos", getBotMotorPosition().in(Units.Inches));
+    SmartDashboard.putNumber("intake/topMotorVel", getTopMotorVelocity().in(Units.InchesPerSecond));
+    SmartDashboard.putNumber("intake/botMotorVel", getBotMotorVelocity().in(Units.InchesPerSecond));
+
+    SmartDashboard.putBoolean("beamBreak/blocked", getBeamBreakIsBlocked());
   }
 
   private Measure<Distance> getTopMotorPosition(){
-    return Units.Inches.of(topMotor.getEncoder().getPosition());
+    return Units.Meters.of(topMotor.getEncoder().getPosition());
   }
 
   private Measure<Distance> getBotMotorPosition(){
-    return Units.Inches.of(botMotor.getEncoder().getPosition());
+    return Units.Meters.of(botMotor.getEncoder().getPosition());
   }
 
   private Measure<Velocity<Distance>> getTopMotorVelocity(){
-    return Units.InchesPerSecond.of(topMotor.getEncoder().getVelocity());
+    return Units.MetersPerSecond.of(topMotor.getEncoder().getVelocity());
   }
 
   private Measure<Velocity<Distance>> getBotMotorVelocity(){
-    return Units.InchesPerSecond.of(botMotor.getEncoder().getVelocity());
+    return Units.MetersPerSecond.of(botMotor.getEncoder().getVelocity());
   }
 
   public Measure<Voltage> getTopMotorVoltage(){
@@ -129,8 +132,8 @@ public class Flywheel extends SubsystemBase {
   };
 
   public void setVelocity(Measure<Velocity<Distance>> velocity){
-    setTopMotorVoltage(Units.Volts.of(topMotorFeedforward.calculate(velocity.in(Units.InchesPerSecond))));
-    setBotMotorVoltage(Units.Volts.of(botMotorFeedforward.calculate(velocity.in(Units.InchesPerSecond))));
+    setTopMotorVoltage(Units.Volts.of(topMotorFeedforward.calculate(velocity.in(Units.MetersPerSecond))));
+    setBotMotorVoltage(Units.Volts.of(botMotorFeedforward.calculate(velocity.in(Units.MetersPerSecond))));
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -144,12 +147,16 @@ public class Flywheel extends SubsystemBase {
   public Command sysIdRoutineCommand(){
     return new InstantCommand()
                 .andThen(this.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withTimeout(10))
-                .andThen(new WaitCommand(5))
+                .andThen(new WaitCommand(2))
                 .andThen(this.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withTimeout(10))
-                .andThen(new WaitCommand(5))
+                .andThen(new WaitCommand(2))
                 .andThen(this.sysIdDynamic(SysIdRoutine.Direction.kForward).withTimeout(5))
-                .andThen(new WaitCommand(5))
+                .andThen(new WaitCommand(2))
                 .andThen(this.sysIdDynamic(SysIdRoutine.Direction.kReverse).withTimeout(5))
-                .andThen(new WaitCommand(5));
+                .andThen(new WaitCommand(2));
+  }
+
+  public boolean getBeamBreakIsBlocked(){
+    return !beamBreak.get();
   }
 }

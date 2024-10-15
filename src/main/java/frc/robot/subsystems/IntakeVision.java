@@ -31,7 +31,7 @@ public class IntakeVision extends SubsystemBase {
 
   public IntakeVision() {
 
-    intakeCamera = new PhotonCamera("IntakeCamera");
+    intakeCamera = new PhotonCamera("Intake_Vision_Cam");
     intakeCamera.setPipelineIndex(0);
 
   }  

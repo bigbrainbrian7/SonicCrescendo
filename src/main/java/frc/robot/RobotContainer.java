@@ -42,7 +42,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  public AHRS navx = new AHRS(Port.kMXP, (byte) 200);
+  public AHRS navx = new AHRS(Port.kMXP, (byte) 100);
 
   public SwerveDriveKinematics swerveDriveKinematics = new SwerveDriveKinematics(
     new Translation2d(Units.Meters.convertFrom(18.5/2.0, Units.Inches),Units.Meters.convertFrom(23/2.0, Units.Inches)),
@@ -129,12 +129,12 @@ public class RobotContainer {
     .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), -Math.PI/2.0), chassis));
 
     //X
-    new Trigger(driverController.button(3))
-    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI/2.0), chassis));
+   // new Trigger(driverController.button(3))
+   // .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI/2.0), chassis));
 
     //Y
-    new Trigger(driverController.button(4))
-    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), 0.0), chassis));
+  //  new Trigger(driverController.button(4))
+  //  .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), 0.0), chassis));
 
     //RIGHT PADDLE
     new Trigger(driverController.povRight())
@@ -150,7 +150,7 @@ public class RobotContainer {
     .whileTrue(new ScoreAmp(shooter, flywheel, intake));
 
     //   //actually shoot
-    new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
+    new Trigger(driverController.button(3))
       .whileTrue(new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake)
       );
 
@@ -214,6 +214,7 @@ public class RobotContainer {
     // An example command will be run in autonomous
     // return Autos.exampleAuto(m_exampleSubsystem);
     // return flywheel.sysIdRoutineCommand();
-    return shooter.sysIdRoutineCommand();
+     return intake.sysIdRoutineCommand();
+   // return null;
   }
 }

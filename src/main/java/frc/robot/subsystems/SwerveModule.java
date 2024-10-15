@@ -91,19 +91,21 @@ public class SwerveModule {
         turnPIDController.setP(1.0);
 
         //PERIODIC FRAME STATUSES
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 5);
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 5);
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 1000);
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 1000);
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 1000);
-        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 1000);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 127);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 11);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 9);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 4421);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 5099);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 6143);
+        driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 5449);
 
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 5);
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 5);
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 1000);
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 1000);
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 5);
-        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 1000);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 89);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 9);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 10);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 6551);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 7451);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 12);
+        turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 4177);
     }
 
     private Measure<Distance> getDriveMotorPosition(){

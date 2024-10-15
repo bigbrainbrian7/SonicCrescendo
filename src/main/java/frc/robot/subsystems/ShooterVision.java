@@ -37,7 +37,7 @@ public class ShooterVision extends SubsystemBase {
   public ShooterVision(SwerveDrivePoseEstimator poseEstimator) {
     this.poseEstimator = poseEstimator;
 
-    camera = new PhotonCamera("ShooterVision");
+    camera = new PhotonCamera("Shooter_Vision_Cam");
     photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camera, robotToCam);
   }
 

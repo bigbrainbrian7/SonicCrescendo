@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.SparkPIDController.ArbFFUnits;
 import com.revrobotics.SparkPIDController;
 
@@ -87,6 +88,14 @@ public class Shooter extends SubsystemBase {
     pidController.setP(30.0/360.0);
     pidController.setOutputRange(-1.0, 1.0);
     motor.burnFlash();
+
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 193);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 23);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 26);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 2671);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 2333);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 17);
+    motor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 23);
   }
 
   @Override
