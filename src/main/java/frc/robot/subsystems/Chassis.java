@@ -71,8 +71,8 @@ public class Chassis extends SubsystemBase {
     updateOdometry();
     SmartDashboard.putNumber("chassis/navx", navx.getRotation2d().getRadians());
     field.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
-    SmartDashboard.putData("field", field);
-
+    SmartDashboard.putData("field", field);    
+    SmartDashboard.putNumber("chassis/xPos", swerveDrivePoseEstimator.getEstimatedPosition().getX());
     for(int i=0; i<4; i++){
       SmartDashboard.putNumber("chassis/swervemodule"+i+"/drivePosition", swerveModules[i].getSwerveModulePosition().distanceMeters);
       SmartDashboard.putNumber("chassis/swervemodule"+i+"/driveVel", swerveModules[i].getSwerveModuleState().speedMetersPerSecond);

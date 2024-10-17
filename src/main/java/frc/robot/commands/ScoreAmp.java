@@ -43,26 +43,34 @@ public class ScoreAmp extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(intake.getBeamBreakIsBlocked() != lastBlockedState){
-      if(intake.getBeamBreakIsBlocked()==false){
-        intakePassed++;
+  //  if(intake.getBeamBreakIsBlocked() != lastBlockedState){
+   //   if(intake.getBeamBreakIsBlocked()==false){
+   //     intakePassed++;
+   //     lastBlockedState = false;
+   //   }
+   //   else{
+   //     lastBlockedState = true;
+   //   }
+   // }
+   if(intake.getBeamBreakIsBlocked()==false){
+        intakePassed=1;
         lastBlockedState = false;
-      }
-      else{
+       }
+       else{
+        intakePassed=0;
         lastBlockedState = true;
-      }
-    }
+       }
 
     if(intakePassed < 1){
-      shooter.setPosition(Units.Degrees.of(90));
+      shooter.setPosition(Units.Degrees.of(85));
     }
     else{
       if(shooter.getAngle().in(Units.Degrees)<shooter.kForwardSoftLimit-2){
-        shooter.setVoltage(Units.Volts.of(2));
+        shooter.setPosition(Units.Degrees.of(100));
       }
     }
 
-    flywheel.setVelocity(Units.InchesPerSecond.of(-150));
+    flywheel.setVelocity(Units.InchesPerSecond.of(-175));
   }
 
   // Called once the command ends or is interrupted.

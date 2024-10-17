@@ -36,7 +36,7 @@ public class SwerveModule {
     private final SparkPIDController turnPIDController;
 
     private final double kDriveGearing = (18.0/22.0)*(15.0/45.0);
-    private final double kWheelDiameter = 3.0;
+    private final double kWheelDiameter = 0.0762;
 
     private final SimpleMotorFeedforward driveMotorFeedForward;
 

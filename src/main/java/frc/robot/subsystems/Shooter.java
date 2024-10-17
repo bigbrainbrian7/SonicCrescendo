@@ -41,7 +41,7 @@ public class Shooter extends SubsystemBase {
 
   private final double angleFromHorizontal = 2.0;
 
-  public final double kForwardSoftLimit = 100;
+  public final double kForwardSoftLimit = 105;
   public final double kReverseSoftLimit = 5;
 
   public boolean isHomed = false; 

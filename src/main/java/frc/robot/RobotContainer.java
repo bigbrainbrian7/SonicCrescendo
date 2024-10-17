@@ -97,8 +97,8 @@ public class RobotContainer {
 
     chassis.setDefaultCommand(chassis.getDriveCommand(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4)));
     shooter.setDefaultCommand(new SequentialCommandGroup(
-        new WaitCommand(1.0),
-        new RunCommand(()->shooter.setPosition(Units.Degrees.of(10)), shooter).withTimeout(0.5),
+        new WaitCommand(0.5),
+        new RunCommand(()->shooter.setPosition(Units.Degrees.of(10)), shooter).withTimeout(1.5),
         new RunCommand(()->{
         shooter.setVoltage(Units.Volts.of(0));
       }, 
@@ -129,12 +129,12 @@ public class RobotContainer {
     .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), -Math.PI/2.0), chassis));
 
     //X
-   // new Trigger(driverController.button(3))
-   // .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI/2.0), chassis));
+    new Trigger(driverController.button(3))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), Math.PI/2.0), chassis));
 
     //Y
-  //  new Trigger(driverController.button(4))
-  //  .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), 0.0), chassis));
+    new Trigger(driverController.button(4))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(-1*driverController.getRawAxis(1), -1*driverController.getRawAxis(0), 0.0), chassis));
 
     //RIGHT PADDLE
     new Trigger(driverController.povRight())
@@ -143,15 +143,21 @@ public class RobotContainer {
       new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-800)), flywheel)
     ));
 
+    new Trigger(driverController.povDown())
+    .whileTrue(
+      new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(-30)),intake)
+    );
+
     new Trigger(()->driverController.getRightTriggerAxis()>0.25)
     .whileTrue(new DriverIntake(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4), chassis, intake, intakeVision));
 
-    new Trigger(driverController.button(4))
+    new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
     .whileTrue(new ScoreAmp(shooter, flywheel, intake));
 
     //   //actually shoot
-    new Trigger(driverController.button(3))
-      .whileTrue(new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake)
+    new Trigger(driverController.button(5))
+      .whileTrue(
+        new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake)
       );
 
     // new Trigger(driverController.button(1))
@@ -172,12 +178,12 @@ public class RobotContainer {
     // );
 
     //   //shoot
-    //   new Trigger(driverController.button(6))
-    //     .whileTrue(new ParallelCommandGroup(
-    //       new RunCommand(()->shooter.setPosition(Units.Degrees.of(30)), shooter),
-    //       new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
-    //     )
-    //   );
+       new Trigger(driverController.button(6))
+         .whileTrue(new ParallelCommandGroup(
+           new RunCommand(()->shooter.setPosition(Units.Degrees.of(52)), shooter),
+           new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
+         )
+       );
 
     // new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
     // .whileTrue(
