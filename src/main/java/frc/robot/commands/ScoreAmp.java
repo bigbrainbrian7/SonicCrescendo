@@ -62,11 +62,11 @@ public class ScoreAmp extends Command {
        }
 
     if(intakePassed < 1){
-      shooter.setPosition(Units.Degrees.of(85));
+      shooter.setPosition(Units.Degrees.of(103));
     }
     else{
       if(shooter.getAngle().in(Units.Degrees)<shooter.kForwardSoftLimit-2){
-        shooter.setPosition(Units.Degrees.of(100));
+        shooter.setPosition(Units.Degrees.of(103));
       }
     }
 

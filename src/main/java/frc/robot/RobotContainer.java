@@ -180,7 +180,7 @@ public class RobotContainer {
     //   //shoot
        new Trigger(driverController.button(6))
          .whileTrue(new ParallelCommandGroup(
-           new RunCommand(()->shooter.setPosition(Units.Degrees.of(52)), shooter),
+           new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
            new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
          )
        );
