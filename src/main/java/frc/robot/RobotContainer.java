@@ -48,10 +48,10 @@ public class RobotContainer {
   public AHRS navx = new AHRS(Port.kMXP, (byte) 100);
 
   public SwerveDriveKinematics swerveDriveKinematics = new SwerveDriveKinematics(
-    new Translation2d(Units.Meters.convertFrom(18.5/2.0, Units.Inches),Units.Meters.convertFrom(23/2.0, Units.Inches)),
-    new Translation2d(Units.Meters.convertFrom(18.5/2.0, Units.Inches),-Units.Meters.convertFrom(23/2.0, Units.Inches)),
-    new Translation2d(-Units.Meters.convertFrom(18.5/2.0, Units.Inches),Units.Meters.convertFrom(23/2.0, Units.Inches)),
-    new Translation2d(-Units.Meters.convertFrom(18.5/2.0, Units.Inches),-Units.Meters.convertFrom(23/2.0, Units.Inches))
+    new Translation2d(Units.Meters.convertFrom(18.0/2.0, Units.Inches),Units.Meters.convertFrom(22.5/2.0, Units.Inches)),
+    new Translation2d(Units.Meters.convertFrom(18.0/2.0, Units.Inches),-Units.Meters.convertFrom(22.5/2.0, Units.Inches)),
+    new Translation2d(-Units.Meters.convertFrom(18.0/2.0, Units.Inches),Units.Meters.convertFrom(22.5/2.0, Units.Inches)),
+    new Translation2d(-Units.Meters.convertFrom(18.0/2.0, Units.Inches),-Units.Meters.convertFrom(22.5/2.0, Units.Inches))
   );
 
   public SwerveDrivePoseEstimator swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(swerveDriveKinematics, navx.getRotation2d(), 
@@ -143,8 +143,8 @@ public class RobotContainer {
     //RIGHT PADDLE
     new Trigger(driverController.povRight())
     .whileTrue(new ParallelCommandGroup(
-      new RunCommand(()->shooter.setPosition(Units.Degrees.of(50)), shooter),
-      new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-800)), flywheel)
+      new RunCommand(()->shooter.setPosition(Units.Degrees.of(55)), shooter),
+      new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-750)), flywheel)
     ));
 
     new Trigger(driverController.povDown())
@@ -187,8 +187,9 @@ public class RobotContainer {
     //   //shoot
        new Trigger(driverController.button(6))
          .whileTrue(new ParallelCommandGroup(
-           new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
-           new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
+          //  new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
+            new RunCommand(()->shooter.setPosition(Units.Degrees.of(shooterVision.getTargetAngle().get())), shooter),
+            new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
          )
        );
 
@@ -214,7 +215,11 @@ public class RobotContainer {
 
     //TRIPLE BAR
     new Trigger(driverController.button(8))
-      .onTrue(new InstantCommand(()->navx.reset()));
+      .onTrue(new InstantCommand(()->navx.reset()))
+      .onTrue(new HomeShooter(shooter)
+        .andThen(new RunCommand(()->shooter.setVoltage(Units.Volts.of(0.3)), shooter).withTimeout(0.5))
+        .andThen(new InstantCommand(()->shooter.setHomed()))
+      );
 
   }
 
@@ -228,9 +233,11 @@ public class RobotContainer {
     // return Autos.exampleAuto(m_exampleSubsystem);
     // return flywheel.sysIdRoutineCommand();
     //  return intake.sysIdRoutineCommand();
+    // return chassis.sysIdRoutineCommand();
   //  return new InstantCommand();
     return new HomeShooter(shooter)
     .andThen(new RunCommand(()->shooter.setVoltage(Units.Volts.of(0.3)), shooter).withTimeout(0.5))
     .andThen(new InstantCommand(()->shooter.setHomed()));
+    // return new RunCommand(()->flywheel.setTopMotorVoltage(Units.Volts.of(9)), flywheel);
   }
 }

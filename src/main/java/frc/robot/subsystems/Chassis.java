@@ -28,7 +28,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class Chassis extends SubsystemBase {
@@ -37,10 +39,10 @@ public class Chassis extends SubsystemBase {
   public SwerveDriveKinematics swerveDriveKinematics; 
   public SwerveDrivePoseEstimator swerveDrivePoseEstimator;
 
-  public final double kMaxSpeedMetersPerSecond = 4.3; 
+  public final double kMaxSpeedMetersPerSecond = 5.5; 
   public final double kMaxAngularVelocity = 11.47;
 
-  private final PIDController headingPID = new PIDController(16.0/Math.PI, 0, 0);
+  private final PIDController headingPID = new PIDController(24.0/Math.PI, 0, 0);
 
   private SwerveModule[] swerveModules = new SwerveModule[4];
 
@@ -84,10 +86,10 @@ public class Chassis extends SubsystemBase {
     this.swerveDriveKinematics = swerveDriveKinematics; 
     this.swerveDrivePoseEstimator = swerveDrivePoseEstimator;
 
-    swerveModules[0] = new SwerveModule(1, 5, new SimpleMotorFeedforward(0.080663, 1.9711, 0.36785));
-    swerveModules[1] = new SwerveModule(2, 6, new SimpleMotorFeedforward(0.12682, 1.971, 0.30547));
-    swerveModules[2] = new SwerveModule(3, 7, new SimpleMotorFeedforward(0.11553, 1.956, 0.33358));
-    swerveModules[3] = new SwerveModule(4, 8, new SimpleMotorFeedforward(0.11616, 1.9571, 0.321));
+    swerveModules[0] = new SwerveModule(1, 5, new SimpleMotorFeedforward(0.04, 2.39, 0.36785));
+    swerveModules[1] = new SwerveModule(2, 6, new SimpleMotorFeedforward(0.04, 2.39, 0.30547));
+    swerveModules[2] = new SwerveModule(3, 7, new SimpleMotorFeedforward(0.04, 2.39, 0.33358));
+    swerveModules[3] = new SwerveModule(4, 8, new SimpleMotorFeedforward(0.04, 2.39, 0.321));
 
     // swerveModules[0].setDriveMotorInverted(false);
     // swerveModules[1].setDriveMotorInverted(false);
@@ -192,7 +194,24 @@ public class Chassis extends SubsystemBase {
     // System.out.println(Timer.getFPGATimestamp());
   }
 
+  public Pose2d getPose(){
+    return swerveDrivePoseEstimator.getEstimatedPosition();
+  }
+
   public Rotation2d getRotation2d(){
     return navx.getRotation2d();
+  }
+
+  public Command sysIdRoutineCommand(){
+    return new SequentialCommandGroup(
+      sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward).withTimeout(5),
+      new WaitCommand(5),
+      sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse).withTimeout(5),
+      new WaitCommand(5),
+      sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward).withTimeout(5),
+      new WaitCommand(kMaxSpeedMetersPerSecond),
+      sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse).withTimeout(5),
+      new WaitCommand(5)
+    );
   }
 }

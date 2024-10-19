@@ -44,23 +44,25 @@ public class ShooterVision extends SubsystemBase {
   // Construct PhotonPoseEstimator
   private final PhotonPoseEstimator photonPoseEstimator;
 
+  private double lastAngle = 10;
+
   public static LUT normalLut = new LUT(new double[][]{
     {0.8, 62.2, 0},
     {1, 57.8, 0},
-    {1.2, 53.7, 0},
-    {1.4, 50.1, 0},
-    {1.6, 46.8, 0},
-    {1.8, 43.8, 0},
-    {2, 41.1, 0},
-    {2.25, 38.1, 0},
-    {2.5, 35.4, 0},
-    {2.75, 33.1, 0},
-    {3, 31, 0},
-    {3.25, 29.1, 0},
-    {3.5, 27.5, 0},
-    {3.75, 26, 0},
-    {4, 24.6, 0},
-    {5, 20.3, 0}
+    {1.2, 53.8, 0},
+    {1.4, 50.3, 0},
+    {1.6, 47.0, 0},
+    {1.8, 45.0, 0},
+    {2, 43.8, 0},//Range good
+    {2.25, 42.0, 0}, //Range good
+    {2.5, 39.5, 0},
+    {2.75, 37.0, 0}, // Range good
+    {3, 36.0, 0}, //Range good, limelight timed out
+    {3.25, 34.0, 0},
+    {3.5, 32.0, 0},
+    {3.75, 30.7, 0},
+    {4, 26, 0},
+    {5, 24.3, 0}
   }
   );
 
@@ -135,10 +137,11 @@ public class ShooterVision extends SubsystemBase {
   public Optional<Double> getTargetAngle(){
     Optional<Double> distance = getDistanceToSpeakerTag();
     if(distance.isPresent()){
+      lastAngle = normalLut.get(distance.get())[0];
       return Optional.of(normalLut.get(distance.get())[0]);
     }
 
-    return Optional.empty();
+    return Optional.of(lastAngle);
   }
   
 }

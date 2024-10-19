@@ -170,4 +170,11 @@ public class Shooter extends SubsystemBase {
     isHomed = true;
   }
 
+  public void unhome(){
+    motor.setSmartCurrentLimit(6);
+    motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
+    isHomed = false;
+  }
+
 }

@@ -62,7 +62,7 @@ public class DriverIntake extends Command {
       chassis.setChassisSpeeds(new ChassisSpeeds(vx.getAsDouble()*chassis.kMaxSpeedMetersPerSecond, vy.getAsDouble()*chassis.kMaxSpeedMetersPerSecond, omega.getAsDouble()*chassis.kMaxAngularVelocity), true);
     }
 
-    intake.setVelocity(Units.InchesPerSecond.of(30));
+    intake.setVelocity(Units.InchesPerSecond.of(45));
 
   }
 

@@ -1,0 +1,63 @@
+{
+    "version": "v0.4",
+    "robotConfiguration": {
+        "mass": 54.33118313560075,
+        "rotationalInertia": 6,
+        "motorMaxTorque": 0.6342541436464088,
+        "motorMaxVelocity": 4704,
+        "gearing": 4.71,
+        "wheelbase": 0.4571997531121333,
+        "trackWidth": 0.5714996913901667,
+        "bumperLength": 0.723899609094211,
+        "bumperWidth": 0.723899609094211,
+        "wheelRadius": 0.0381
+    },
+    "paths": {
+        "Test": {
+            "waypoints": [
+                {
+                    "x": 1.3711199760437012,
+                    "y": 5.606069564819336,
+                    "heading": 0,
+                    "isInitialGuess": false,
+                    "translationConstrained": true,
+                    "headingConstrained": true,
+                    "controlIntervalCount": 40
+                },
+                {
+                    "x": 2.8719141483306885,
+                    "y": 6.327230453491211,
+                    "heading": 0,
+                    "isInitialGuess": false,
+                    "translationConstrained": true,
+                    "headingConstrained": true,
+                    "controlIntervalCount": 40
+                }
+            ],
+            "trajectory": [],
+            "trajectoryWaypoints": [],
+            "constraints": [
+                {
+                    "scope": [
+                        "first"
+                    ],
+                    "type": "StopPoint"
+                },
+                {
+                    "scope": [
+                        "last"
+                    ],
+                    "type": "StopPoint"
+                }
+            ],
+            "usesControlIntervalGuessing": true,
+            "defaultControlIntervalCount": 40,
+            "usesDefaultFieldObstacles": true,
+            "circleObstacles": [],
+            "eventMarkers": [],
+            "isTrajectoryStale": true
+        }
+    },
+    "splitTrajectoriesAtStopPoints": false,
+    "usesObstacles": false
+}
