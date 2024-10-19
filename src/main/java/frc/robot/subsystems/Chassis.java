@@ -20,6 +20,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -27,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class Chassis extends SubsystemBase {
 
@@ -42,6 +45,38 @@ public class Chassis extends SubsystemBase {
   private SwerveModule[] swerveModules = new SwerveModule[4];
 
   Field2d field = new Field2d();
+
+  private final SysIdRoutine sysIdRoutine =
+  new SysIdRoutine(
+      // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
+      new SysIdRoutine.Config(),
+      new SysIdRoutine.Mechanism(
+          // Tell SysId how to plumb the driving voltage to the motors.
+          (Measure<Voltage> volts) -> {
+            swerveModules[0].setVoltageDrive(volts);
+            swerveModules[1].setVoltageDrive(volts);
+            swerveModules[2].setVoltageDrive(volts);
+            swerveModules[3].setVoltageDrive(volts);
+          },
+          log -> {
+            log.motor("frontRight")
+                .voltage(swerveModules[1].getDriveVoltage())
+                .linearPosition(swerveModules[1].getDriveMotorPosition())
+                .linearVelocity(swerveModules[1].getDriveMotorVelocity());
+            log.motor("frontLeft")
+              .voltage(swerveModules[0].getDriveVoltage())
+              .linearPosition(swerveModules[0].getDriveMotorPosition())
+              .linearVelocity(swerveModules[0].getDriveMotorVelocity());
+            log.motor("rearRight")
+              .voltage(swerveModules[3].getDriveVoltage())
+              .linearPosition(swerveModules[3].getDriveMotorPosition())
+              .linearVelocity(swerveModules[3].getDriveMotorVelocity());
+            log.motor("rearLeft")
+              .voltage(swerveModules[2].getDriveVoltage())
+              .linearPosition(swerveModules[2].getDriveMotorPosition())
+              .linearVelocity(swerveModules[2].getDriveMotorVelocity());
+          },
+          this));
 
   /** Creates a new Chassis. */
   public Chassis(AHRS navx, SwerveDriveKinematics swerveDriveKinematics, SwerveDrivePoseEstimator swerveDrivePoseEstimator) {
