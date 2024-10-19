@@ -108,15 +108,15 @@ public class SwerveModule {
         turnMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 4177);
     }
 
-    private Measure<Distance> getDriveMotorPosition(){
+    public Measure<Distance> getDriveMotorPosition(){
         return Units.Meters.of(driveEncoder.getPosition());
     }
 
-    private Measure<Velocity<Distance>> getDriveMotorVelocity(){
+    public Measure<Velocity<Distance>> getDriveMotorVelocity(){
         return Units.MetersPerSecond.of(driveEncoder.getVelocity());
     }
 
-    private Measure<Angle> getTurnMotorPosition(){
+    public Measure<Angle> getTurnMotorPosition(){
         return Units.Radians.of(turnEncoder.getPosition());
     }
 

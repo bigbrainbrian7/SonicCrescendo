@@ -39,7 +39,7 @@ public class Shooter extends SubsystemBase {
   private final double kGearing = (1/20.0) * (18.0/36.0);
   private final double kConversionFactor = 30.4/(21.856-0.254);
 
-  private final double angleFromHorizontal = 2.0;
+  private final double angleFromHorizontal = 4.0;
 
   public final double kForwardSoftLimit = 105;
   public final double kReverseSoftLimit = 5;
@@ -70,11 +70,11 @@ public class Shooter extends SubsystemBase {
     motor.restoreFactoryDefaults();
 
     //Safety
-    motor.setSmartCurrentLimit(40);
+    motor.setSmartCurrentLimit(6);
     motor.setSoftLimit(SoftLimitDirection.kForward, (float) kForwardSoftLimit);
     motor.setSoftLimit(SoftLimitDirection.kReverse, (float) kReverseSoftLimit);
-    motor.enableSoftLimit(SoftLimitDirection.kForward, true);
-    motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+    motor.enableSoftLimit(SoftLimitDirection.kForward, false);
+    motor.enableSoftLimit(SoftLimitDirection.kReverse, false);
     motor.setIdleMode(IdleMode.kCoast);
 
     //Position/Velocity
@@ -104,12 +104,9 @@ public class Shooter extends SubsystemBase {
     SmartDashboard.putNumber("shooter/angle", getAngle().in(Units.Degrees));
     SmartDashboard.putNumber("shooter/omega", getAngularVelocity().in(Units.DegreesPerSecond));
     SmartDashboard.putNumber("shooter/voltage", getVoltage().in(Units.Volts));
-  }
+    SmartDashboard.putNumber("shooter/current", motor.getOutputCurrent());
 
-  public void homeShooter(){
-    motor.getEncoder().setPosition(angleFromHorizontal);
-    // motor.getEncoder().setPosition(0.0);
-    isHomed = true;
+    SmartDashboard.putBoolean("shooter/isHomed", isHomed);
   }
 
   public Measure<Angle> getAngle(){
@@ -160,4 +157,17 @@ public class Shooter extends SubsystemBase {
     double targetDegree = Clamp.clamp(angle.in(Units.Degrees), kReverseSoftLimit, kForwardSoftLimit);
     pidController.setReference(targetDegree, ControlType.kPosition, 0, 0.33*Math.cos(getAngle().in(Units.Degrees)), ArbFFUnits.kVoltage);
   }
+
+  public boolean isAtHomePosition(){
+    return motor.getOutputCurrent() > 5;
+  }
+
+  public void setHomed(){
+    motor.getEncoder().setPosition(angleFromHorizontal);
+    motor.setSmartCurrentLimit(40);
+    motor.enableSoftLimit(SoftLimitDirection.kForward, true);
+    motor.enableSoftLimit(SoftLimitDirection.kReverse, true);
+    isHomed = true;
+  }
+
 }

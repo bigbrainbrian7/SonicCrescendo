@@ -24,13 +24,16 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriverIntake;
+import frc.robot.commands.HomeShooter;
 import frc.robot.commands.ScoreAmp;
+import frc.robot.commands.TurnToSpeakerAprilTag;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Flywheel;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.IntakeVision;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.ShooterVision;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -67,6 +70,7 @@ public class RobotContainer {
   public final Chassis chassis = new Chassis(navx, swerveDriveKinematics, swerveDrivePoseEstimator);
 
   public final IntakeVision intakeVision = new IntakeVision();
+  public final ShooterVision shooterVision = new ShooterVision(swerveDrivePoseEstimator);
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   public final CommandXboxController driverController = new CommandXboxController(0);
@@ -151,6 +155,9 @@ public class RobotContainer {
     new Trigger(()->driverController.getRightTriggerAxis()>0.25)
     .whileTrue(new DriverIntake(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4), chassis, intake, intakeVision));
 
+    new Trigger(driverController.button(6))
+    .whileTrue(new TurnToSpeakerAprilTag(()->-1*driverController.getRawAxis(1), ()->-1*driverController.getRawAxis(0), ()->-1*driverController.getRawAxis(4), chassis, shooterVision));
+
     new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
     .whileTrue(new ScoreAmp(shooter, flywheel, intake));
 
@@ -220,7 +227,10 @@ public class RobotContainer {
     // An example command will be run in autonomous
     // return Autos.exampleAuto(m_exampleSubsystem);
     // return flywheel.sysIdRoutineCommand();
-     return intake.sysIdRoutineCommand();
-   // return null;
+    //  return intake.sysIdRoutineCommand();
+  //  return new InstantCommand();
+    return new HomeShooter(shooter)
+    .andThen(new RunCommand(()->shooter.setVoltage(Units.Volts.of(0.3)), shooter).withTimeout(0.5))
+    .andThen(new InstantCommand(()->shooter.setHomed()));
   }
 }
