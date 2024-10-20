@@ -35,7 +35,7 @@ public class SwerveModule {
     private final SparkPIDController drivePIDController;
     private final SparkPIDController turnPIDController;
 
-    private final double kDriveGearing = (18.0/22.0)*(15.0/45.0);
+    private final double kDriveGearing = (14.0/22.0)*(15.0/45.0);
     private final double kWheelDiameter = 0.0762;
 
     private final SimpleMotorFeedforward driveMotorFeedForward;
@@ -67,10 +67,11 @@ public class SwerveModule {
         turnEncoder.setInverted(true); //Module reverses spin direction of azimuth mot
 
         //SAFETY
-        driveMotor.setSmartCurrentLimit(40);
+        driveMotor.setSmartCurrentLimit(50);
         turnMotor.setSmartCurrentLimit(20);
         driveMotor.setIdleMode(IdleMode.kBrake);
         turnMotor.setIdleMode(IdleMode.kBrake);
+        driveMotor.setOpenLoopRampRate(0.25); 
 
         //Position + Velocity
         double positionConversionFactor = kDriveGearing * kWheelDiameter*Math.PI;
@@ -89,6 +90,8 @@ public class SwerveModule {
         turnPIDController.setPositionPIDWrappingMaxInput(2*Math.PI);
 
         turnPIDController.setP(1.0);
+
+        drivePIDController.setP(0.06);
 
         //PERIODIC FRAME STATUSES
         driveMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 127);

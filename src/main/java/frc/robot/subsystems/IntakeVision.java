@@ -41,8 +41,8 @@ public class IntakeVision extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     //read values periodically
-    SmartDashboard.putNumber("intakeVision/rotationToTarget", getRotationToNote().orElse(new Rotation2d(12345)).getDegrees());
-    SmartDashboard.putBoolean("intakeVision/seesTarget", seesTarget());
+    // SmartDashboard.putNumber("intakeVision/rotationToTarget", getRotationToNote().orElse(new Rotation2d(12345)).getDegrees());
+    // SmartDashboard.putBoolean("intakeVision/seesTarget", seesTarget());
 
 
   }

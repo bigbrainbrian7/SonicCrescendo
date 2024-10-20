@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -12,17 +13,18 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
+// import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
-import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -39,7 +41,7 @@ public class Chassis extends SubsystemBase {
   public SwerveDriveKinematics swerveDriveKinematics; 
   public SwerveDrivePoseEstimator swerveDrivePoseEstimator;
 
-  public final double kMaxSpeedMetersPerSecond = 5.5; 
+  public final double kMaxSpeedMetersPerSecond = 4.67; 
   public final double kMaxAngularVelocity = 11.47;
 
   private final PIDController headingPID = new PIDController(24.0/Math.PI, 0, 0);
@@ -51,7 +53,7 @@ public class Chassis extends SubsystemBase {
   private final SysIdRoutine sysIdRoutine =
   new SysIdRoutine(
       // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-      new SysIdRoutine.Config(),
+      new SysIdRoutine.Config(Units.Volts.per(Units.Seconds).of(0.1), Units.Volts.of(1.25), null),
       new SysIdRoutine.Mechanism(
           // Tell SysId how to plumb the driving voltage to the motors.
           (Measure<Voltage> volts) -> {
@@ -86,10 +88,10 @@ public class Chassis extends SubsystemBase {
     this.swerveDriveKinematics = swerveDriveKinematics; 
     this.swerveDrivePoseEstimator = swerveDrivePoseEstimator;
 
-    swerveModules[0] = new SwerveModule(1, 5, new SimpleMotorFeedforward(0.04, 2.39, 0.36785));
-    swerveModules[1] = new SwerveModule(2, 6, new SimpleMotorFeedforward(0.04, 2.39, 0.30547));
-    swerveModules[2] = new SwerveModule(3, 7, new SimpleMotorFeedforward(0.04, 2.39, 0.33358));
-    swerveModules[3] = new SwerveModule(4, 8, new SimpleMotorFeedforward(0.04, 2.39, 0.321));
+    swerveModules[0] = new SwerveModule(1, 5, new SimpleMotorFeedforward(0.04, 2.6, 0.36785));
+    swerveModules[1] = new SwerveModule(2, 6, new SimpleMotorFeedforward(0.04, 2.6, 0.30547));
+    swerveModules[2] = new SwerveModule(3, 7, new SimpleMotorFeedforward(0.04, 2.6, 0.33358));
+    swerveModules[3] = new SwerveModule(4, 8, new SimpleMotorFeedforward(0.04, 2.6, 0.321));
 
     // swerveModules[0].setDriveMotorInverted(false);
     // swerveModules[1].setDriveMotorInverted(false);
@@ -111,10 +113,10 @@ public class Chassis extends SubsystemBase {
     SmartDashboard.putData("field", field);    
     SmartDashboard.putNumber("chassis/xPos", swerveDrivePoseEstimator.getEstimatedPosition().getX());
     for(int i=0; i<4; i++){
-      SmartDashboard.putNumber("chassis/swervemodule"+i+"/drivePosition", swerveModules[i].getSwerveModulePosition().distanceMeters);
-      SmartDashboard.putNumber("chassis/swervemodule"+i+"/driveVel", swerveModules[i].getSwerveModuleState().speedMetersPerSecond);
-      SmartDashboard.putNumber("chassis/swervemodule"+i+"/turnPosition", swerveModules[i].getSwerveModulePosition().angle.getDegrees());
-      SmartDashboard.putNumber("chassis/swervemodule"+i+"/desiredState", swerveModules[i].desiredState.angle.getDegrees());
+      // SmartDashboard.putNumber("chassis/swervemodule"+i+"/drivePosition", swerveModules[i].getSwerveModulePosition().distanceMeters);
+      // SmartDashboard.putNumber("chassis/swervemodule"+i+"/driveVel", swerveModules[i].getSwerveModuleState().speedMetersPerSecond);
+      // SmartDashboard.putNumber("chassis/swervemodule"+i+"/turnPosition", swerveModules[i].getSwerveModulePosition().angle.getDegrees());
+      // SmartDashboard.putNumber("chassis/swervemodule"+i+"/desiredState", swerveModules[i].desiredState.angle.getDegrees());
     }
   }
 
@@ -136,8 +138,8 @@ public class Chassis extends SubsystemBase {
     double currentRadians = navx.getRotation2d().getRadians(); 
     double correctedRadians = MathUtil.angleModulus(targetRadians);
     double output = headingPID.calculate(currentRadians, correctedRadians);
-    SmartDashboard.putNumber("drivePid/output", output);
-    SmartDashboard.putNumber("drivePid/error", correctedRadians-currentRadians);
+    // SmartDashboard.putNumber("drivePid/output", output);
+    // SmartDashboard.putNumber("drivePid/error", correctedRadians-currentRadians);
     setChassisSpeeds(new ChassisSpeeds(vx*kMaxSpeedMetersPerSecond, vy*kMaxSpeedMetersPerSecond, output), true);
   };
 
@@ -192,6 +194,29 @@ public class Chassis extends SubsystemBase {
         });
 
     // System.out.println(Timer.getFPGATimestamp());
+  }
+
+  public void setFieldCentricOffset(double degrees, BooleanSupplier isBlue){
+    navx.reset();
+    navx.setAngleAdjustment(isBlue.getAsBoolean() ? degrees : -degrees);
+  }
+
+  public void resetOdometryAllianceManaged(Pose2d pose, BooleanSupplier isBlue){
+    if(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red){
+      pose = new Pose2d(16.542-pose.getX(), pose.getY(), new Rotation2d(Math.PI-pose.getRotation().getRadians())); 
+    }
+
+    var rot = navx.getRotation2d(); 
+
+    swerveDrivePoseEstimator.resetPosition(
+        navx.getRotation2d(),
+        new SwerveModulePosition[] {
+            swerveModules[0].getSwerveModulePosition(),
+            swerveModules[1].getSwerveModulePosition(),
+            swerveModules[2].getSwerveModulePosition(),
+            swerveModules[3].getSwerveModulePosition()
+        },
+        pose);
   }
 
   public Pose2d getPose(){

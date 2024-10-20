@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,7 +40,7 @@ public class ShooterVision extends SubsystemBase {
 
   //Forward Camera
   public final Translation2d robotToCam = new Translation2d(Units.inchesToMeters(-11.5), Units.inchesToMeters(-9.5));
-  private final Transform3d odoRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-11.5), Units.inchesToMeters(-9.5), 0.22), new Rotation3d(0,Units.degreesToRadians(45),0));
+  private final Transform3d odoRobotToCam = new Transform3d(new Translation3d(Units.inchesToMeters(-11.5), Units.inchesToMeters(-9.5), 0.22), new Rotation3d(0,Units.degreesToRadians(30),0));
 
   // Construct PhotonPoseEstimator
   private final PhotonPoseEstimator photonPoseEstimator;
@@ -58,11 +59,11 @@ public class ShooterVision extends SubsystemBase {
     {2.5, 39.5, 0},
     {2.75, 37.0, 0}, // Range good
     {3, 36.0, 0}, //Range good, limelight timed out
-    {3.25, 34.0, 0},
-    {3.5, 32.0, 0},
-    {3.75, 30.7, 0},
-    {4, 26, 0},
-    {5, 24.3, 0}
+    {3.25, 34.0, 0},//good
+    {3.5, 32.7, 0},
+    {3.75, 32.0, 0},
+    {4, 31.2, 0},
+    {5, 30.0, 0}
   }
   );
 
@@ -79,9 +80,13 @@ public class ShooterVision extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     // Optional<EstimatedRobotPose> estimatedRobotPose = getEstimatedGlobalPose(null)
-    SmartDashboard.putNumber("shooterVision/distanceMeters", getDistanceToSpeakerTag().orElse(9999999999.0));
-    SmartDashboard.putNumber("shooterVision/targetPitch", getTargetPitch().orElse(9999999999.0));
-    SmartDashboard.putNumber("shooterVision/desiredAngle", getTargetAngle().orElse(0.0));
+    // SmartDashboard.putNumber("shooterVision/distanceMeters", getDistanceToSpeakerTag().orElse(9999999999.0));
+    // SmartDashboard.putNumber("shooterVision/targetPitch", getTargetPitch().orElse(9999999999.0));
+    // SmartDashboard.putNumber("shooterVision/desiredAngle", getTargetAngle().orElse(0.0));
+    // Optional<EstimatedRobotPose> estimatedPose = getEstimatedGlobalPose(poseEstimator.getEstimatedPosition());
+    // if(estimatedPose.isPresent()){
+    //   poseEstimator.addVisionMeasurement(estimatedPose.get().estimatedPose.toPose2d(), Timer.getFPGATimestamp());
+    // }
   }
 
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
@@ -95,8 +100,8 @@ public class ShooterVision extends SubsystemBase {
     Optional<Double> returnValue = Optional.empty();
     if(results.hasTargets()){
       for (PhotonTrackedTarget target : results.getTargets()){
-        if((target.getFiducialId()==7&&alliance==Alliance.Blue)||(target.getFiducialId()==15&&alliance==Alliance.Red)){
-          double targetDistance = PhotonUtils.calculateDistanceToTargetMeters(0.22, 1.45, Units.degreesToRadians(43), Units.degreesToRadians(target.getPitch()));
+        if((target.getFiducialId()==7&&alliance==Alliance.Blue)||(target.getFiducialId()==4&&alliance==Alliance.Red)){
+          double targetDistance = PhotonUtils.calculateDistanceToTargetMeters(0.22, 1.45, Units.degreesToRadians(30), Units.degreesToRadians(target.getPitch()));
           returnValue = Optional.of(targetDistance);
         }
       }
@@ -111,7 +116,7 @@ public class ShooterVision extends SubsystemBase {
     Optional<Rotation2d> returnValue = Optional.empty();
     if(results.hasTargets()){
       for (PhotonTrackedTarget target : results.getTargets()){
-        if((target.getFiducialId()==7&&alliance==Alliance.Blue)||(target.getFiducialId()==15&&alliance==Alliance.Red)){
+        if((target.getFiducialId()==7&&alliance==Alliance.Blue)||(target.getFiducialId()==4&&alliance==Alliance.Red)){
           returnValue = Optional.of(new Rotation2d(Units.degreesToRadians(-target.getYaw())));
         }
       }

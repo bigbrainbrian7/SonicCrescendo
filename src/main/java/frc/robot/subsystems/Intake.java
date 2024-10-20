@@ -79,7 +79,7 @@ public class Intake extends SubsystemBase {
       motor.clearFaults();
 
       //SAFETY
-      motor.setSmartCurrentLimit(20);
+      motor.setSmartCurrentLimit(22);
       motor.setIdleMode(IdleMode.kBrake);
       botMotor1.setInverted(false);
       botMotor2.setInverted(true);
@@ -108,7 +108,7 @@ public class Intake extends SubsystemBase {
     topMotor.clearFaults();
 
     //SAFETY
-    topMotor.setSmartCurrentLimit(40);
+    topMotor.setSmartCurrentLimit(60);
     topMotor.setIdleMode(IdleMode.kBrake);
     topMotor.setInverted(false);
 
@@ -134,15 +134,15 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("intake/botMotor1Pos", getbotMotor1Position().in(Units.Inches));
-    SmartDashboard.putNumber("intake/botMotor2Pos", getbotMotor2Position().in(Units.Inches));
-    SmartDashboard.putNumber("intake/topMotorPos", gettopMotorPosition().in(Units.Inches));
+    // SmartDashboard.putNumber("intake/botMotor1Pos", getbotMotor1Position().in(Units.Inches));
+    // SmartDashboard.putNumber("intake/botMotor2Pos", getbotMotor2Position().in(Units.Inches));
+    // SmartDashboard.putNumber("intake/topMotorPos", gettopMotorPosition().in(Units.Inches));
 
-    SmartDashboard.putNumber("intake/botMotor1Vel", getbotMotor1Velocity().in(Units.InchesPerSecond));
-    SmartDashboard.putNumber("intake/botMotor2Vel", getbotMotor2Velocity().in(Units.InchesPerSecond));
-    SmartDashboard.putNumber("intake/topMotorVel", gettopMotorVelocity().in(Units.InchesPerSecond));
+    // SmartDashboard.putNumber("intake/botMotor1Vel", getbotMotor1Velocity().in(Units.InchesPerSecond));
+    // SmartDashboard.putNumber("intake/botMotor2Vel", getbotMotor2Velocity().in(Units.InchesPerSecond));
+    // SmartDashboard.putNumber("intake/topMotorVel", gettopMotorVelocity().in(Units.InchesPerSecond));
 
-    SmartDashboard.putBoolean("beamBreak/blocked", getBeamBreakIsBlocked());
+    // SmartDashboard.putBoolean("beamBreak/blocked", getBeamBreakIsBlocked());
 
   }
 

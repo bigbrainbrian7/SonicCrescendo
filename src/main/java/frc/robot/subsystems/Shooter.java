@@ -70,7 +70,7 @@ public class Shooter extends SubsystemBase {
     motor.restoreFactoryDefaults();
 
     //Safety
-    motor.setSmartCurrentLimit(6);
+    motor.setSmartCurrentLimit(7);
     motor.setSoftLimit(SoftLimitDirection.kForward, (float) kForwardSoftLimit);
     motor.setSoftLimit(SoftLimitDirection.kReverse, (float) kReverseSoftLimit);
     motor.enableSoftLimit(SoftLimitDirection.kForward, false);
@@ -101,12 +101,12 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("shooter/angle", getAngle().in(Units.Degrees));
-    SmartDashboard.putNumber("shooter/omega", getAngularVelocity().in(Units.DegreesPerSecond));
-    SmartDashboard.putNumber("shooter/voltage", getVoltage().in(Units.Volts));
-    SmartDashboard.putNumber("shooter/current", motor.getOutputCurrent());
+    // SmartDashboard.putNumber("shooter/angle", getAngle().in(Units.Degrees));
+    // SmartDashboard.putNumber("shooter/omega", getAngularVelocity().in(Units.DegreesPerSecond));
+    // SmartDashboard.putNumber("shooter/voltage", getVoltage().in(Units.Volts));
+    // SmartDashboard.putNumber("shooter/current", motor.getOutputCurrent());
 
-    SmartDashboard.putBoolean("shooter/isHomed", isHomed);
+    // SmartDashboard.putBoolean("shooter/isHomed", isHomed);
   }
 
   public Measure<Angle> getAngle(){
@@ -159,7 +159,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtHomePosition(){
-    return motor.getOutputCurrent() > 5;
+    return motor.getOutputCurrent() > 6;
   }
 
   public void setHomed(){

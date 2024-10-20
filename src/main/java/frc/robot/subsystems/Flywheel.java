@@ -90,10 +90,10 @@ public class Flywheel extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    SmartDashboard.putNumber("flywheel/topMotorPos", getTopMotorPosition().in(Units.Inches));
-    SmartDashboard.putNumber("flywheel/botMotorPos", getBotMotorPosition().in(Units.Inches));
-    SmartDashboard.putNumber("flywheel/topMotorVel", getTopMotorVelocity().in(Units.InchesPerSecond));
-    SmartDashboard.putNumber("flywheel/botMotorVel", getBotMotorVelocity().in(Units.InchesPerSecond));
+    // SmartDashboard.putNumber("flywheel/topMotorPos", getTopMotorPosition().in(Units.Inches));
+    // SmartDashboard.putNumber("flywheel/botMotorPos", getBotMotorPosition().in(Units.Inches));
+    // SmartDashboard.putNumber("flywheel/topMotorVel", getTopMotorVelocity().in(Units.InchesPerSecond));
+    // SmartDashboard.putNumber("flywheel/botMotorVel", getBotMotorVelocity().in(Units.InchesPerSecond));
   }
 
   private Measure<Distance> getTopMotorPosition(){

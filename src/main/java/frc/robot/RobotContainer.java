@@ -10,10 +10,12 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -27,6 +29,7 @@ import frc.robot.commands.DriverIntake;
 import frc.robot.commands.HomeShooter;
 import frc.robot.commands.ScoreAmp;
 import frc.robot.commands.TurnToSpeakerAprilTag;
+import frc.robot.subsystems.AutoFactory;
 import frc.robot.subsystems.Chassis;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Flywheel;
@@ -74,6 +77,9 @@ public class RobotContainer {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   public final CommandXboxController driverController = new CommandXboxController(0);
+  public final CommandXboxController operatorController = new CommandXboxController(1);
+
+ public AutoFactory autoFactory = new AutoFactory(this);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -91,6 +97,11 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    new Trigger(()->intake.getBeamBreakIsBlocked()).onTrue(
+      new RunCommand(()->driverController.getHID().setRumble(RumbleType.kBothRumble, 0.5)).withTimeout(3)
+      .finallyDo((e)->driverController.getHID().setRumble(RumbleType.kBothRumble, 0.0))
+    );
+
     // // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     // new Trigger(m_exampleSubsystem::exampleCondition)
     //     .onTrue(new ExampleCommand(m_exampleSubsystem));
@@ -145,11 +156,24 @@ public class RobotContainer {
     .whileTrue(new ParallelCommandGroup(
       new RunCommand(()->shooter.setPosition(Units.Degrees.of(55)), shooter),
       new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-750)), flywheel)
+    ))
+    .whileTrue(new RunCommand(()->chassis.driveToBearing(
+        -1*driverController.getRawAxis(1), 
+        -1*driverController.getRawAxis(0), 
+        DriverStation.getAlliance().orElse(Alliance.Blue)==Alliance.Blue ? -0.45 : 0.45
+      ), chassis))
+    ;
+
+    //LEFT PADDLE
+    new Trigger(driverController.povLeft())
+    .whileTrue(new ParallelCommandGroup(
+      new RunCommand(()->shooter.setPosition(Units.Degrees.of(15)), shooter),
+      new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-750)), flywheel)
     ));
 
     new Trigger(driverController.povDown())
     .whileTrue(
-      new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(-30)),intake)
+      new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(-60)),intake)
     );
 
     new Trigger(()->driverController.getRightTriggerAxis()>0.25)
@@ -167,16 +191,6 @@ public class RobotContainer {
         new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake)
       );
 
-    // new Trigger(driverController.button(1))
-    //   .whileTrue(new RunCommand(()->{
-    //     flywheel.setVelocity(Units.InchesPerSecond.of(-driverController.getRawAxis(1)*700));
-    //   }, 
-    //   flywheel)
-    // );
-
-    // new Trigger(driverController.button(4))
-    //   .whileTrue(new SetShooterStateTrapezoidal(45, shooter));
-
     // new Trigger(driverController.button(4))
     //   .whileTrue(new ParallelCommandGroup(
     //     new RunCommand(()->shooter.setPosition(Units.Degrees.of(98)), shooter),
@@ -193,26 +207,6 @@ public class RobotContainer {
          )
        );
 
-    // new Trigger(()->driverController.getLeftTriggerAxis()>0.25)
-    // .whileTrue(
-    //   new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)), flywheel)
-    // );
-    // new Trigger(driverController.button(4))
-    // .whileTrue(
-    //   new RunCommand(()->shooter.setVoltage(Units.Volts.of(-5*driverController.getRawAxis(1))),shooter)
-    // );
-    // new Trigger(driverController.button(2))
-    //   .whileTrue(new RunCommand(()->{
-    //     shooter.setVoltage(Units.Volts.of(4*-1*driverController.getRawAxis(1)));
-    //   }, 
-    //   shooter)
-    // );
-
-    // new Trigger(driverController.button(3))
-    //   .whileTrue(
-    //     new SetShooterStateTrapezoidal(Units.Degrees.of(-driverController.getRawAxis(0)*9+10), shooter)
-    //   );
-
     //TRIPLE BAR
     new Trigger(driverController.button(8))
       .onTrue(new InstantCommand(()->navx.reset()))
@@ -221,6 +215,15 @@ public class RobotContainer {
         .andThen(new InstantCommand(()->shooter.setHomed()))
       );
 
+
+    //Operator Controller
+    new Trigger(()->operatorController.getRightTriggerAxis()>0.25)
+      .whileTrue(new ParallelCommandGroup(
+        //  new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
+          new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
+          new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
+        )
+      );
   }
 
   /**
@@ -237,7 +240,16 @@ public class RobotContainer {
   //  return new InstantCommand();
     return new HomeShooter(shooter)
     .andThen(new RunCommand(()->shooter.setVoltage(Units.Volts.of(0.3)), shooter).withTimeout(0.5))
-    .andThen(new InstantCommand(()->shooter.setHomed()));
+    .andThen(new InstantCommand(()->shooter.setHomed()))
+    // .andThen(new ParallelCommandGroup(
+    //     //  new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
+    //       new RunCommand(()->shooter.setPosition(Units.Degrees.of(57)), shooter),
+    //       new RunCommand(()->flywheel.setVelocity(Units.InchesPerSecond.of(-950)), flywheel)
+    //     ).withTimeout(3)
+    // )
+    // .andThen(new RunCommand(()->intake.setVelocity(Units.InchesPerSecond.of(30)),intake).withTimeout(2));
+    .andThen(autoFactory.getAuto());
+  //  .andThen(autoFactory.getAuto());
     // return new RunCommand(()->flywheel.setTopMotorVoltage(Units.Volts.of(9)), flywheel);
   }
 }
